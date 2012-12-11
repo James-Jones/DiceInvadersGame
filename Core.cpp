@@ -112,11 +112,17 @@ int APIENTRY WinMain(
     int frame = 0;
 
     float timeOfLastFire = lastTime;
+
     int wasDown = 0;
 
     //Health. 1 player for each life.
     CreateObjects(PLAYER, 3,
         Vec2(screenWidth-SPRITE_SIZE*3, screenHeight),
+        Vec2(0, 0), Vec2(SPRITE_SIZE, 0), objects);
+
+
+    CreateObjects(ENEMY1, screenWidth/SPRITE_SIZE,
+        Vec2(0, 32),
         Vec2(0, 0), Vec2(SPRITE_SIZE, 0), objects);
 
     int score = 0;
@@ -137,6 +143,8 @@ int APIENTRY WinMain(
             mSprites);
 
         MoveObjects(objects, deltaTimeInSecs);
+
+        Animate(objects, newTime);
 
         ProcessKeyboardInput(system,
             &objects[0],

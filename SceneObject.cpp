@@ -1,6 +1,23 @@
 #include "SceneObject.h"
 #include <assert.h>
 
+void Animate(std::vector<CommonSceneObjectData>& objects,
+                 int timeInSecs)
+{
+    const uint32_t count = objects.size();
+    for(uint32_t index = 1 /* can safely skip player */; index < count; ++index)
+    {
+        if(objects[index].mType == ENEMY1 || objects[index].mType == ENEMY2)
+        {
+            if(timeInSecs & 1)
+                objects[index].mType = ENEMY2;
+            else
+                objects[index].mType = ENEMY1;
+
+        }
+    }
+}
+
 void MoveObjects(std::vector<CommonSceneObjectData>& objects,
                  float deltaTimeInSecs)
 {

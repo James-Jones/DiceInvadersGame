@@ -38,4 +38,7 @@ void DrawObjects(std::vector<CommonSceneObjectData>& objects,
 void MoveObjects(std::vector<CommonSceneObjectData>& objects,
                  float deltaTimeInSecs);
 
+void Animate(std::vector<CommonSceneObjectData>& objects,
+                 int timeInSecs);
+
 #endif
