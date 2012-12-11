@@ -32,6 +32,12 @@ public:
         return *this;
     }
 
+    const Vec2 operator * (const float rhs)
+    {
+        return Vec2( mX * rhs,
+                     mY * rhs);
+    }
+
     void moveX(const float delta)
     {
         mX += delta;

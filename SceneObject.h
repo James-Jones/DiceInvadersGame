@@ -23,6 +23,8 @@ struct CommonSceneObjectData
     Vec2 mVelocity;
 };
 
+const uint32_t SPRITE_SIZE = 32; //In pixels. Width=Height.
+
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
                    const Vec2& pos,
@@ -31,5 +33,8 @@ void CreateObjects(const ObjectType type,
 
 void DrawObjects(std::vector<CommonSceneObjectData>& objects,
                  ISprite* sprites[NUM_OBJECT_TYPES]);
+
+void MoveObjects(std::vector<CommonSceneObjectData>& objects,
+                 float deltaTimeInSecs);
 
 #endif

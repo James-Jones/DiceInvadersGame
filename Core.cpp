@@ -58,8 +58,8 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     if(keys.fire)
     {
         //Fire rocket upwards from just above the player position.
-        Vec2 velocity(0, 1);
-        CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, 32), velocity, objects);
+        Vec2 velocity(0, -16);
+        CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE), velocity, objects);
     }
 }
 
@@ -100,6 +100,8 @@ int APIENTRY WinMain(
 
         DrawObjects(objects,
             mSprites);
+
+        MoveObjects(objects, deltaTimeInSecs);
 
         ProcessKeyboardInput(system,
             &objects[0],
