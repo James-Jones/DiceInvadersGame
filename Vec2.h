@@ -14,6 +14,12 @@ public:
         return *this;
     }
 
+    const Vec2 operator - (const Vec2& rhs)
+    {
+        return Vec2( mX - rhs.x(),
+                     mY - rhs.y());
+    }
+
     const Vec2 operator + (const Vec2& rhs)
     {
         return Vec2( mX + rhs.x(),

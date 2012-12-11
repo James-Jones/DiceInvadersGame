@@ -38,6 +38,7 @@ private:
 
 void ProcessKeyboardInput(IDiceInvaders* system,
                           CommonSceneObjectData* player,
+                          std::vector <CommonSceneObjectData>& objects,
                           float deltaTimeInSecs)
 {
     IDiceInvaders::KeyStatus keys;
@@ -52,6 +53,13 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     else if (keys.left)
     {
         player->mPosition.moveX(-move);
+    }
+
+    if(keys.fire)
+    {
+        //Fire rocket upwards from just above the player position.
+        Vec2 velocity(0, 1);
+        CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, 32), velocity, objects);
     }
 }
 
@@ -95,6 +103,7 @@ int APIENTRY WinMain(
 
         ProcessKeyboardInput(system,
             &objects[0],
+            objects,
             deltaTimeInSecs);
 	}
 
