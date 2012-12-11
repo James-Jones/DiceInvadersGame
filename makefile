@@ -1,9 +1,10 @@
-Example.exe: Example.cpp
+DiceInvaders.exe: Core.cpp SceneObject.cpp
 	cl /nologo $** 
 
 clean: dummy
-	-@del Example.exe
-	-@del Example.obj
+	-@del DiceInvaders.exe
+	-@del Core.obj
+	-@del SceneObject.obj
 
 dummy:
 	
