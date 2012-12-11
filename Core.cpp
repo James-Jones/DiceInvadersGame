@@ -94,7 +94,7 @@ int APIENTRY WinMain(
     system->init(screenWidth, screenHeight);
 
     std::vector <CommonSceneObjectData> objects;
-    objects.reserve(5120);
+    objects.reserve(512);
 
     //Create the player first. Guaranteed to be at the first
     //index so no need to search for it.
@@ -143,6 +143,8 @@ int APIENTRY WinMain(
             mSprites);
 
         MoveObjects(objects, deltaTimeInSecs);
+
+        CullObjects(objects, screenWidth, screenHeight-hudWidth);
 
         Animate(objects, newTime);
 

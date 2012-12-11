@@ -18,10 +18,14 @@ enum ObjectType {
 struct CommonSceneObjectData
 {
     CommonSceneObjectData(){}
+    int alive;
     ObjectType mType;
     Vec2 mPosition;
     Vec2 mVelocity;
 };
+
+//First 4 are special. Player and health sprites.
+const uint32_t FIRST_GENERIC_OBJECT = 4;
 
 const uint32_t SPRITE_SIZE = 32; //In pixels. Width=Height.
 
@@ -40,5 +44,8 @@ void MoveObjects(std::vector<CommonSceneObjectData>& objects,
 
 void Animate(std::vector<CommonSceneObjectData>& objects,
                  int timeInSecs);
+
+void CullObjects(std::vector<CommonSceneObjectData>& objects,
+                 int width, int height);
 
 #endif
