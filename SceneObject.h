@@ -29,6 +29,7 @@ void CreateObjects(const ObjectType type,
                    const uint32_t count,
                    const Vec2& pos,
                    const Vec2& vel,
+                   const Vec2& deltaPos,
                    std::vector<CommonSceneObjectData>& objects);
 
 void DrawObjects(std::vector<CommonSceneObjectData>& objects,

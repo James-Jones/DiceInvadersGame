@@ -47,6 +47,19 @@ public:
         mY += delta;
     }
 
+    void clampX(const float min, const float max)
+    {
+        if(mX < min)
+        {
+            mX = min;
+        }
+
+        if(mX > max)
+        {
+            mX = max;
+        }
+    }
+
     float x() const {
         return mX;
     }
