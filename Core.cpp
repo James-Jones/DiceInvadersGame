@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <cassert>
 #include <cstdio>
+#include <cmath>
+
 #include "SceneObject.h"
 
 class DiceInvadersLib
@@ -94,7 +96,10 @@ int APIENTRY WinMain(
     const float fScreenHeight = 480.0f;
     const float fHudWidth = 32.0f;
 
-    system->init(screenWidth, screenHeight);
+    if(system->init(screenWidth, screenHeight) == false)
+    {
+        return 0;
+    }
 
     std::vector <CommonSceneObjectData> objects;
     objects.reserve(512);
@@ -110,17 +115,9 @@ int APIENTRY WinMain(
     mSprites[ENEMY1] = system->createSprite("data/enemy1.bmp");
     mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
 
-	float lastTime = system->getElapsedTime();
-
-    int frame = 0;
-
-    float timeOfLastFire = lastTime;
-
-    int wasDown = 0;
-
     //Health. 1 player for each life.
     CreateObjects(PLAYER, 3,
-        Vec2(fScreenWidth-SPRITE_SIZE*3.0f, fScreenHeight),
+        Vec2(fScreenWidth-F_SPRITE_SIZE*3.0f, fScreenHeight),
         Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
     //One row of aliens.
@@ -129,6 +126,9 @@ int APIENTRY WinMain(
         Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
     int score = 0;
+    float lastTime = system->getElapsedTime();
+    float timeOfLastFire = lastTime;
+    int wasDown = 0;
 
 	while (system->update())
 	{
