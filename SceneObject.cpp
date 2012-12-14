@@ -13,11 +13,10 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
             objects[index].mPosition.y() < 0 || 
             objects[index].mPosition.y() > height)
         {
-            //Move last to here.
+            //Best to delete from the end of vector. Swap with the end object
+            //then delete.
             objects[index] = objects.back();
-            //Delete last
             objects.pop_back();
-            //Update count
             count--;
         }
     }
@@ -57,8 +56,8 @@ void DrawObjects(std::vector<CommonSceneObjectData>& objects,
     for(uint32_t index = 0; index < count; ++index)
     {
         assert(objects[index].mType < NUM_OBJECT_TYPES);
-        sprites[objects[index].mType]->draw(objects[index].mPosition.x(),
-                                            objects[index].mPosition.y()-SPRITE_SIZE);
+        sprites[objects[index].mType]->draw(static_cast<int>(objects[index].mPosition.x()),
+                                            static_cast<int>(objects[index].mPosition.y())-SPRITE_SIZE);
     }
 }
 

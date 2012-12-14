@@ -55,12 +55,12 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     if (keys.right)
     {
         player->mPosition.moveX(move);
-        player->mPosition.clampX(0, 640-32);
+        player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
     }
     else if (keys.left)
     {
         player->mPosition.moveX(-move);
-        player->mPosition.clampX(0, 640-32);
+        player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
     }
 
     const float fMaxRateOfFire = 0.2f;
@@ -69,7 +69,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     if(keys.fire && !wasDown && (now-timeOfLastFire >fMaxRateOfFire))
     {
         //Fire rocket upwards from just above the player position.
-        Vec2 velocity(0, -64);
+        Vec2 velocity(0.0f, -640.0f);
         CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE/2), velocity, Vec2(0, 0), objects);
 
         timeOfLastFire = now;
@@ -90,6 +90,9 @@ int APIENTRY WinMain(
     const uint32_t screenWidth = 640;
     const uint32_t screenHeight = 480;
     const uint32_t hudWidth = 32;
+    const float fScreenWidth = 640.0f;
+    const float fScreenHeight = 480.0f;
+    const float fHudWidth = 32.0f;
 
     system->init(screenWidth, screenHeight);
 
@@ -98,7 +101,7 @@ int APIENTRY WinMain(
 
     //Create the player first. Guaranteed to be at the first
     //index so no need to search for it.
-    CreateObjects(PLAYER, 1, Vec2(screenWidth/2.0f, screenHeight-hudWidth), Vec2(0, 0), Vec2(0, 0), objects);
+    CreateObjects(PLAYER, 1, Vec2(fScreenWidth/2.0f, fScreenHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), objects);
 
 	ISprite* mSprites[NUM_OBJECT_TYPES];
     mSprites[ROCKET] = system->createSprite("data/rocket.bmp");
@@ -117,13 +120,13 @@ int APIENTRY WinMain(
 
     //Health. 1 player for each life.
     CreateObjects(PLAYER, 3,
-        Vec2(screenWidth-SPRITE_SIZE*3, screenHeight),
-        Vec2(0, 0), Vec2(SPRITE_SIZE, 0), objects);
+        Vec2(fScreenWidth-SPRITE_SIZE*3.0f, fScreenHeight),
+        Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
-
-    CreateObjects(ENEMY1, screenWidth/SPRITE_SIZE,
-        Vec2(0, 32),
-        Vec2(0, 0), Vec2(SPRITE_SIZE, 0), objects);
+    //One row of aliens.
+    CreateObjects(ENEMY1, (uint32_t)std::ceil(fScreenWidth/F_SPRITE_SIZE),
+        Vec2(0.0f, 32.0f),
+        Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
     int score = 0;
 
@@ -146,7 +149,7 @@ int APIENTRY WinMain(
 
         CullObjects(objects, screenWidth, screenHeight-hudWidth);
 
-        Animate(objects, newTime);
+        Animate(objects, static_cast<int>(std::floor(newTime)));
 
         ProcessKeyboardInput(system,
             &objects[0],

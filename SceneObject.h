@@ -18,7 +18,6 @@ enum ObjectType {
 struct CommonSceneObjectData
 {
     CommonSceneObjectData(){}
-    int alive;
     ObjectType mType;
     Vec2 mPosition;
     Vec2 mVelocity;
@@ -28,6 +27,7 @@ struct CommonSceneObjectData
 const uint32_t FIRST_GENERIC_OBJECT = 4;
 
 const uint32_t SPRITE_SIZE = 32; //In pixels. Width=Height.
+const float F_SPRITE_SIZE = 32.0f;//Float version to help avoid casts and compiler warnings.
 
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
