@@ -15,8 +15,8 @@ public:
 		m_lib = LoadLibrary(libraryPath);
 		assert(m_lib);
 
-		DiceInvadersFactoryType* factory = (DiceInvadersFactoryType*)GetProcAddress(
-				m_lib, "DiceInvadersFactory");
+		DiceInvadersFactoryType* factory = reinterpret_cast<DiceInvadersFactoryType*>(GetProcAddress(
+				m_lib, "DiceInvadersFactory"));
 		m_interface = factory();
 		assert(m_interface);
 	}
@@ -50,7 +50,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     IDiceInvaders::KeyStatus keys;
     system->getKeyStatus(keys);
 
-    float move = deltaTimeInSecs * 160.0f;
+    const float move = deltaTimeInSecs * 160.0f;
 
     if (keys.right)
     {
@@ -86,7 +86,7 @@ int APIENTRY WinMain(
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	DiceInvadersLib lib("DiceInvaders.dll");
-	IDiceInvaders* system = lib.get();
+	IDiceInvaders * const system = lib.get();
     const uint32_t screenWidth = 640;
     const uint32_t screenHeight = 480;
     const uint32_t hudWidth = 32;
@@ -124,8 +124,8 @@ int APIENTRY WinMain(
         Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
     //One row of aliens.
-    CreateObjects(ENEMY1, (uint32_t)std::ceil(fScreenWidth/F_SPRITE_SIZE),
-        Vec2(0.0f, 32.0f),
+    CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE)),
+        Vec2(0.0f, F_SPRITE_SIZE),
         Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
 
     int score = 0;
@@ -133,9 +133,10 @@ int APIENTRY WinMain(
 	while (system->update())
 	{
         char scoreString[8]; //Max score is 99999999
-		float newTime = system->getElapsedTime();
-        float deltaTimeInSecs = newTime - lastTime;
-		float move = deltaTimeInSecs * 160.0f;
+		const float newTime = system->getElapsedTime();
+        const float deltaTimeInSecs = newTime - lastTime;
+		const float move = deltaTimeInSecs * 160.0f;
+
 		lastTime = newTime;
 
         sprintf_s(scoreString, 8, "%d", score);
