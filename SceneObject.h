@@ -38,16 +38,16 @@ void CreateObjects(const ObjectType type,
                    std::vector<CommonSceneObjectData>& objects);
 
 void DrawObjects(std::vector<CommonSceneObjectData>& objects,
-                 ISprite* sprites[NUM_OBJECT_TYPES]);
+                 ISprite* __restrict sprites[NUM_OBJECT_TYPES]);
 
 void MoveObjects(std::vector<CommonSceneObjectData>& objects,
-                 float deltaTimeInSecs);
+                 const float deltaTimeInSecs);
 
 void Animate(std::vector<CommonSceneObjectData>& objects,
-                 int timeInSecs);
+                 const int timeInSecs);
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
-                 int width, int height);
+                 const int width, const int height);
 
 void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                     int hitCounts[NUM_OBJECT_TYPES]);

@@ -108,7 +108,7 @@ int APIENTRY WinMain(
     //index so no need to search for it.
     CreateObjects(PLAYER, 1, Vec2(fScreenWidth/2.0f, fScreenHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), objects);
 
-	ISprite* mSprites[NUM_OBJECT_TYPES];
+	ISprite* __restrict mSprites[NUM_OBJECT_TYPES];
     mSprites[ROCKET] = system->createSprite("data/rocket.bmp");
     mSprites[BOMB] = system->createSprite("data/bomb.bmp");
     mSprites[PLAYER] = system->createSprite("data/player.bmp");
@@ -118,10 +118,13 @@ int APIENTRY WinMain(
 
     const int MaxLives = 3;
 
-    //One row of aliens.
-    CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE)),
-        Vec2(0.0f, F_SPRITE_SIZE),
-        Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+    for(int i =0; i < 8; ++i)
+    {
+        //One row of aliens.
+        CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
+            Vec2(0.0f, F_SPRITE_SIZE * i),
+            Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+    }
 
     int score = 0;
     float lastTime = system->getElapsedTime();

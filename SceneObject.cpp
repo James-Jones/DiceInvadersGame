@@ -7,7 +7,7 @@
 void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                     int hitCounts[NUM_OBJECT_TYPES])
 {
-    uint32_t count = objects.size();
+    const uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
         if(objects[index].mType == ROCKET)
@@ -15,19 +15,19 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
             //Rocket bitmap
             //12,7
             //17,26
-            float rx = objects[index].mPosition.x() + 12;
-            float ry = objects[index].mPosition.y() + 7;
-            float rx2 = rx + 5;
-            float ry2 = ry + 19;
+            const float rx = objects[index].mPosition.x() + 12;
+            const float ry = objects[index].mPosition.y() + 7;
+            const float rx2 = rx + 5;
+            const float ry2 = ry + 19;
             for(uint32_t innerIndex = FIRST_GENERIC_OBJECT; innerIndex < count; ++innerIndex)
             {
                 if(objects[innerIndex].mType == ENEMY1 || objects[innerIndex].mType == ENEMY2 )
                 {
-                    float left = objects[innerIndex].mPosition.x();
-                    float top = objects[innerIndex].mPosition.y();
+                    const float left = objects[innerIndex].mPosition.x();
+                    const float top = objects[innerIndex].mPosition.y();
 
-                    float right = left + SPRITE_SIZE;
-                    float bottom = top + SPRITE_SIZE;
+                    const float right = left + SPRITE_SIZE;
+                    const float bottom = top + SPRITE_SIZE;
 
                     if((rx > left) && (rx < right))
                     {
@@ -35,6 +35,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                         {
                             hitCounts[objects[innerIndex].mType]++;
                             objects[innerIndex].mType = NULL_OBJECT;
+                            objects[index].mType = NULL_OBJECT;
                         }
                     }
                 }
@@ -44,7 +45,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
 }
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
-                 int width, int height)
+                 const int width, const int height)
 {
     uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count;)
@@ -69,7 +70,7 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
 }
 
 void Animate(std::vector<CommonSceneObjectData>& objects,
-                 int timeInSecs)
+                 const int timeInSecs)
 {
     const uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
@@ -86,7 +87,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
 }
 
 void MoveObjects(std::vector<CommonSceneObjectData>& objects,
-                 float deltaTimeInSecs)
+                 const float deltaTimeInSecs)
 {
     const uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
@@ -96,7 +97,7 @@ void MoveObjects(std::vector<CommonSceneObjectData>& objects,
 }
 
 void DrawObjects(std::vector<CommonSceneObjectData>& objects,
-                 ISprite* sprites[NUM_OBJECT_TYPES])
+                 ISprite* __restrict sprites[NUM_OBJECT_TYPES])
 {
     const uint32_t count = objects.size();
     for(uint32_t index = 0; index < count; ++index)
