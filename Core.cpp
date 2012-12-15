@@ -42,12 +42,37 @@ private:
 	HMODULE m_lib;
 };
 
+struct GameState
+{
+    static const int HudWidth = 32;
+    static const int MaxLives = 3;
+
+    GameState(int screenW, int screenH) : mScreenWidth(screenW),
+        mScreenHeight(screenH),
+        mPlayerScore(0),
+        mPlayerLives(MaxLives),
+        mFireKeyWasDown(0)
+    {
+    }
+
+    int mScreenWidth;
+    int mScreenHeight;
+    int mPlayerScore;
+    int mPlayerLives;
+    float mLastTime;//Seconds
+    int mFloorLastTime;
+    float mTimeOfLastFire;
+    int mFireKeyWasDown;
+    std::vector <CommonSceneObjectData> mObjects;
+    ISprite* mSprites[NUM_OBJECT_TYPES];
+};
+
 void ProcessKeyboardInput(IDiceInvaders* system,
                           CommonSceneObjectData* player,
                           std::vector <CommonSceneObjectData>& objects,
                           float deltaTimeInSecs,
                           float& timeOfLastFire,
-                          int& wasDown)
+                          int& fireKeyWasDown)
 {
     IDiceInvaders::KeyStatus keys;
     system->getKeyStatus(keys);
@@ -68,7 +93,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     const float fMaxRateOfFire = 0.2f;
     const float now = system->getElapsedTime();
 
-    if(keys.fire && !wasDown && (now-timeOfLastFire >fMaxRateOfFire))
+    if(keys.fire && !fireKeyWasDown && (now-timeOfLastFire >fMaxRateOfFire))
     {
         //Fire rocket upwards from just above the player position.
         Vec2 velocity(0.0f, -640.0f);
@@ -76,7 +101,115 @@ void ProcessKeyboardInput(IDiceInvaders* system,
 
         timeOfLastFire = now;
     }
-    wasDown = keys.fire;
+    fireKeyWasDown = keys.fire;
+}
+
+void ResultScreen(IDiceInvaders* system,
+                GameState& state)
+{
+    char resultString[256];
+    sprintf_s(resultString, 256, "Final score is %d", state.mPlayerScore);
+    system->drawText(state.mScreenWidth/3, state.mScreenHeight/2, resultString);
+}
+
+void GameScreen(IDiceInvaders* system,
+                GameState& state)
+{
+    const float newTime = system->getElapsedTime();
+    const float deltaTimeInSecs = newTime - state.mLastTime;
+    const int iFloorNewTime = static_cast<int>(std::floor(newTime));
+
+    {
+        char scoreString[8]; //Max score is 99999999
+        sprintf_s(scoreString, 8, "%d", state.mPlayerScore);
+        system->drawText(0, state.mScreenHeight-SPRITE_SIZE, scoreString);
+    }
+#if defined(SHOW_STATS)
+    {
+        char debugInfo[512];
+        sprintf_s(debugInfo, 512, "%d objects; %.4f ms", state.mObjects.size(),
+            deltaTimeInSecs * 1000.0f);
+        system->drawText(0, state.mScreenHeight-64, debugInfo);
+    }
+#endif
+
+    state.mLastTime = newTime;
+
+    DrawObjects(state.mObjects,
+        state.mSprites);
+
+    //Health. 1 player sprite for each life.
+    for(int i=0; i<state.mPlayerLives; ++i)
+    {
+        const int x = state.mScreenWidth-(SPRITE_SIZE*GameState::MaxLives) + SPRITE_SIZE*i;
+        const int y = state.mScreenHeight-SPRITE_SIZE;
+        state.mSprites[PLAYER]->draw(x, y);
+    }
+
+    MoveObjects(state.mObjects, deltaTimeInSecs);
+
+    CullObjects(state.mObjects, state.mScreenWidth, state.mScreenHeight-state.HudWidth);
+
+    Animate(state.mObjects, static_cast<int>(std::floor(newTime)));
+
+    int hitCounts[NUM_OBJECT_TYPES];
+    for(int i=0; i<NUM_OBJECT_TYPES;++i)
+    {
+        hitCounts[i] = 0;
+    }
+    CollideObjects(state.mObjects, hitCounts);
+
+    state.mPlayerScore += hitCounts[ENEMY1];
+    state.mPlayerScore += hitCounts[ENEMY2];
+    state.mPlayerLives -= hitCounts[PLAYER];
+
+    AliensRandomFire(state.mObjects, state.mFloorLastTime, iFloorNewTime);
+
+    ProcessKeyboardInput(system,
+        &state.mObjects[0],
+        state.mObjects,
+        deltaTimeInSecs,
+        state.mTimeOfLastFire,
+        state.mFireKeyWasDown);
+
+    state.mFloorLastTime = iFloorNewTime;
+
+    //Wait until the end to free all objects so preceding
+    //code and safely assume there is at least 1 object in vector.
+    if(!state.mPlayerLives)
+    {
+        state.mObjects.clear();
+    }
+}
+
+void InitGameState(IDiceInvaders* system, GameState& gameState)
+{
+    gameState.mObjects.reserve(512);
+    const float fScreenWidth = static_cast<float>(gameState.mScreenWidth);
+    const float fScreenHeight = static_cast<float>(gameState.mScreenHeight);
+    const float fHudWidth = static_cast<float>(gameState.HudWidth);
+
+    //Create the player first. Guaranteed to be at the first
+    //index so no need to search for it.
+    CreateObjects(PLAYER, 1, Vec2(fScreenWidth/2.0f, fScreenHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), gameState.mObjects);
+
+    gameState.mSprites[ROCKET] = system->createSprite("data/rocket.bmp");
+    gameState.mSprites[BOMB] = system->createSprite("data/bomb.bmp");
+    gameState.mSprites[PLAYER] = system->createSprite("data/player.bmp");
+    gameState.mSprites[ENEMY1] = system->createSprite("data/enemy1.bmp");
+    gameState.mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
+    gameState.mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
+
+    for(int i =0; i < 8; ++i)
+    {
+        //One row of aliens.
+        CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
+            Vec2(0.0f, F_SPRITE_SIZE * i),
+            Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), gameState.mObjects);
+    }
+
+    gameState.mLastTime = system->getElapsedTime();
+    gameState.mTimeOfLastFire = gameState.mLastTime;
 }
 
 int APIENTRY WinMain(
@@ -89,107 +222,37 @@ int APIENTRY WinMain(
 
 	DiceInvadersLib lib("DiceInvaders.dll");
 	IDiceInvaders * const system = lib.get();
+
     const int screenWidth = 640;
     const int screenHeight = 480;
-    const int hudWidth = 32;
-    const float fScreenWidth = 640.0f;
-    const float fScreenHeight = 480.0f;
-    const float fHudWidth = 32.0f;
 
     if(system->init(screenWidth, screenHeight) == false)
     {
         return 0;
     }
 
-    std::vector <CommonSceneObjectData> objects;
-    objects.reserve(512);
+    GameState gameState(screenWidth, screenHeight);
 
-    //Create the player first. Guaranteed to be at the first
-    //index so no need to search for it.
-    CreateObjects(PLAYER, 1, Vec2(fScreenWidth/2.0f, fScreenHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), objects);
+    InitGameState(system, gameState);
 
-	ISprite* __restrict mSprites[NUM_OBJECT_TYPES];
-    mSprites[ROCKET] = system->createSprite("data/rocket.bmp");
-    mSprites[BOMB] = system->createSprite("data/bomb.bmp");
-    mSprites[PLAYER] = system->createSprite("data/player.bmp");
-    mSprites[ENEMY1] = system->createSprite("data/enemy1.bmp");
-    mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
-    mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
+    bool bSystemOK = system->update();
 
-    const int MaxLives = 3;
-
-    for(int i =0; i < 8; ++i)
+    while(bSystemOK && gameState.mPlayerLives)
     {
-        //One row of aliens.
-        CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
-            Vec2(0.0f, F_SPRITE_SIZE * i),
-            Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+        GameScreen(system, gameState);
+        bSystemOK = system->update();
     }
 
-    int score = 0;
-    float lastTime = system->getElapsedTime();
-    float timeOfLastFire = lastTime;
-    int wasDown = 0;
-    int lives = MaxLives;
-
-	while (system->update())
+	while (bSystemOK)
 	{
-        char scoreString[8]; //Max score is 99999999
-		const float newTime = system->getElapsedTime();
-        const float deltaTimeInSecs = newTime - lastTime;
-
-		lastTime = newTime;
-
-        sprintf_s(scoreString, 8, "%d", score);
-
-        system->drawText(0, screenHeight-SPRITE_SIZE, scoreString);
-
-#if defined(SHOW_STATS)
-        char debugInfo[512];
-        sprintf_s(debugInfo, 512, "%d objects; %.4f ms", objects.size(),
-            deltaTimeInSecs * 1000.0f);
-        system->drawText(0, screenHeight-64, debugInfo);
-#endif
-
-        DrawObjects(objects,
-            mSprites);
-
-        //Health. 1 player sprite for each life.
-        for(int i=0; i<lives; ++i)
-        {
-            const int x = screenWidth-(SPRITE_SIZE*MaxLives) + SPRITE_SIZE*i;
-            const int y = screenHeight-SPRITE_SIZE;
-            mSprites[PLAYER]->draw(x, y);
-        }
-
-        MoveObjects(objects, deltaTimeInSecs);
-
-        CullObjects(objects, screenWidth, screenHeight-hudWidth);
-
-        Animate(objects, static_cast<int>(std::floor(newTime)));
-
-        int hitCounts[NUM_OBJECT_TYPES];
-        for(int i=0; i<NUM_OBJECT_TYPES;++i)
-        {
-            hitCounts[i] = 0;
-        }
-        CollideObjects(objects, hitCounts);
-
-        score += hitCounts[ENEMY1];
-        score += hitCounts[ENEMY2];
-        lives -= hitCounts[PLAYER];
-
-        ProcessKeyboardInput(system,
-            &objects[0],
-            objects,
-            deltaTimeInSecs,
-            timeOfLastFire,
-            wasDown);
+        //Game has ended. Window has not been closed. Show final score
+        ResultScreen(system, gameState);
+        bSystemOK = system->update();
 	}
 
     for(uint32_t index = 0; index < NUM_OBJECT_TYPES; ++index)
     {
-        mSprites[index]->destroy();
+        gameState.mSprites[index]->destroy();
     }
 
 	system->destroy();

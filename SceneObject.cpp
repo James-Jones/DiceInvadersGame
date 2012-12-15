@@ -2,6 +2,26 @@
 #include <cmath>
 #include <assert.h>
 
+//Pick a random object each second. If the object is an alien
+//then it fires a bomb.
+void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
+                 int floorLastTime, int floorNewTime)
+{
+    if(floorLastTime != floorNewTime) //At least one second has passed.
+    {
+        const uint32_t count = objects.size();
+        const uint32_t index = std::rand() % count;
+
+        if(objects[index].mType == ENEMY1 ||
+            objects[index].mType == ENEMY2 )
+        {
+            CreateObjects(BOMB, 1,
+                objects[index].mPosition + Vec2(0.0f, F_SPRITE_SIZE),
+                Vec2(0, 32), Vec2(0, 0), objects);
+        }
+    }
+}
+
 //Currently a simple discrete method. Will fail to detect
 //collision if not called frequently enough.
 void CollideObjects(std::vector<CommonSceneObjectData>& objects,
@@ -38,6 +58,35 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                             objects[index].mType = NULL_OBJECT;
                         }
                     }
+                }
+            }
+        }
+
+        if(objects[index].mType == BOMB)
+        {
+            //Rocket bitmap
+            //12,7
+            //17,26
+            const float rx = objects[index].mPosition.x() + 12;
+            const float ry = objects[index].mPosition.y() + 7;
+            const float rx2 = rx + 5;
+            const float ry2 = ry + 19;
+            
+            const uint32_t innerIndex = 0;
+
+            const float left = objects[innerIndex].mPosition.x();
+            const float top = objects[innerIndex].mPosition.y();
+
+            const float right = left + SPRITE_SIZE;
+            const float bottom = top + SPRITE_SIZE;
+
+            if((rx > left) && (rx < right))
+            {
+                if((ry < bottom) && (ry > top))
+                {
+                    hitCounts[objects[innerIndex].mType]++;
+                    //objects[innerIndex].mType = NULL_OBJECT;
+                    objects[index].mType = NULL_OBJECT;
                 }
             }
         }

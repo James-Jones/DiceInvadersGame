@@ -52,4 +52,7 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
 void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                     int hitCounts[NUM_OBJECT_TYPES]);
 
+void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
+                 int floorLastTime, int floorNewTime);
+
 #endif
