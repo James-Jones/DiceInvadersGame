@@ -49,6 +49,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
                  int width, int height);
 
-void CollideObjects(std::vector<CommonSceneObjectData>& objects);
+void CollideObjects(std::vector<CommonSceneObjectData>& objects,
+                    int hitCounts[NUM_OBJECT_TYPES]);
 
 #endif

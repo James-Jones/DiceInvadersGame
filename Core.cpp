@@ -159,7 +159,15 @@ int APIENTRY WinMain(
 
         Animate(objects, static_cast<int>(std::floor(newTime)));
 
-        CollideObjects(objects);
+        int hitCounts[NUM_OBJECT_TYPES];
+        for(int i=0; i<NUM_OBJECT_TYPES;++i)
+        {
+            hitCounts[i] = 0;
+        }
+        CollideObjects(objects, hitCounts);
+
+        score += hitCounts[ENEMY1];
+        score += hitCounts[ENEMY2];
 
         ProcessKeyboardInput(system,
             &objects[0],

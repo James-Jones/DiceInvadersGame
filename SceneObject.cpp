@@ -4,7 +4,8 @@
 
 //Currently a simple discrete method. Will fail to detect
 //collision if not called frequently enough.
-void CollideObjects(std::vector<CommonSceneObjectData>& objects)
+void CollideObjects(std::vector<CommonSceneObjectData>& objects,
+                    int hitCounts[NUM_OBJECT_TYPES])
 {
     uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
@@ -32,6 +33,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects)
                     {
                         if((ry < bottom) && (ry > top))
                         {
+                            hitCounts[objects[innerIndex].mType]++;
                             objects[innerIndex].mType = NULL_OBJECT;
                         }
                     }
