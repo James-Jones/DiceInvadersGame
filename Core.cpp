@@ -116,10 +116,7 @@ int APIENTRY WinMain(
     mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
     mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
 
-    //Health. 1 player for each life.
-    CreateObjects(PLAYER, 3,
-        Vec2(fScreenWidth-F_SPRITE_SIZE*3.0f, fScreenHeight),
-        Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+    const int MaxLives = 3;
 
     //One row of aliens.
     CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE)),
@@ -130,6 +127,7 @@ int APIENTRY WinMain(
     float lastTime = system->getElapsedTime();
     float timeOfLastFire = lastTime;
     int wasDown = 0;
+    int lives = MaxLives;
 
 	while (system->update())
 	{
@@ -153,6 +151,14 @@ int APIENTRY WinMain(
         DrawObjects(objects,
             mSprites);
 
+        //Health. 1 player sprite for each life.
+        for(int i=0; i<lives; ++i)
+        {
+            const int x = screenWidth-(SPRITE_SIZE*MaxLives) + SPRITE_SIZE*i;
+            const int y = screenHeight-SPRITE_SIZE;
+            mSprites[PLAYER]->draw(x, y);
+        }
+
         MoveObjects(objects, deltaTimeInSecs);
 
         CullObjects(objects, screenWidth, screenHeight-hudWidth);
@@ -168,6 +174,7 @@ int APIENTRY WinMain(
 
         score += hitCounts[ENEMY1];
         score += hitCounts[ENEMY2];
+        lives -= hitCounts[PLAYER];
 
         ProcessKeyboardInput(system,
             &objects[0],
