@@ -12,6 +12,7 @@ enum ObjectType {
     PLAYER,
     ENEMY1,
     ENEMY2,
+    NULL_OBJECT,//Marked for deletion. Deleted by CullObjects
     NUM_OBJECT_TYPES,
 };
 
@@ -47,5 +48,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
                  int width, int height);
+
+void CollideObjects(std::vector<CommonSceneObjectData>& objects);
 
 #endif

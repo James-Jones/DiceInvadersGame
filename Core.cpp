@@ -89,9 +89,9 @@ int APIENTRY WinMain(
 
 	DiceInvadersLib lib("DiceInvaders.dll");
 	IDiceInvaders * const system = lib.get();
-    const uint32_t screenWidth = 640;
-    const uint32_t screenHeight = 480;
-    const uint32_t hudWidth = 32;
+    const int screenWidth = 640;
+    const int screenHeight = 480;
+    const int hudWidth = 32;
     const float fScreenWidth = 640.0f;
     const float fScreenHeight = 480.0f;
     const float fHudWidth = 32.0f;
@@ -114,6 +114,7 @@ int APIENTRY WinMain(
     mSprites[PLAYER] = system->createSprite("data/player.bmp");
     mSprites[ENEMY1] = system->createSprite("data/enemy1.bmp");
     mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
+    mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
 
     //Health. 1 player for each life.
     CreateObjects(PLAYER, 3,
@@ -135,13 +136,19 @@ int APIENTRY WinMain(
         char scoreString[8]; //Max score is 99999999
 		const float newTime = system->getElapsedTime();
         const float deltaTimeInSecs = newTime - lastTime;
-		const float move = deltaTimeInSecs * 160.0f;
 
 		lastTime = newTime;
 
         sprintf_s(scoreString, 8, "%d", score);
 
         system->drawText(0, screenHeight-SPRITE_SIZE, scoreString);
+
+#if defined(SHOW_STATS)
+        char debugInfo[512];
+        sprintf_s(debugInfo, 512, "%d objects; %.4f ms", objects.size(),
+            deltaTimeInSecs * 1000.0f);
+        system->drawText(0, screenHeight-64, debugInfo);
+#endif
 
         DrawObjects(objects,
             mSprites);
@@ -151,6 +158,8 @@ int APIENTRY WinMain(
         CullObjects(objects, screenWidth, screenHeight-hudWidth);
 
         Animate(objects, static_cast<int>(std::floor(newTime)));
+
+        CollideObjects(objects);
 
         ProcessKeyboardInput(system,
             &objects[0],

@@ -1,13 +1,54 @@
 #include "SceneObject.h"
+#include <cmath>
 #include <assert.h>
+
+//Currently a simple discrete method. Will fail to detect
+//collision if not called frequently enough.
+void CollideObjects(std::vector<CommonSceneObjectData>& objects)
+{
+    uint32_t count = objects.size();
+    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
+    {
+        if(objects[index].mType == ROCKET)
+        {
+            //Rocket bitmap
+            //12,7
+            //17,26
+            float rx = objects[index].mPosition.x() + 12;
+            float ry = objects[index].mPosition.y() + 7;
+            float rx2 = rx + 5;
+            float ry2 = ry + 19;
+            for(uint32_t innerIndex = FIRST_GENERIC_OBJECT; innerIndex < count; ++innerIndex)
+            {
+                if(objects[innerIndex].mType == ENEMY1 || objects[innerIndex].mType == ENEMY2 )
+                {
+                    float left = objects[innerIndex].mPosition.x();
+                    float top = objects[innerIndex].mPosition.y();
+
+                    float right = left + SPRITE_SIZE;
+                    float bottom = top + SPRITE_SIZE;
+
+                    if((rx > left) && (rx < right))
+                    {
+                        if((ry < bottom) && (ry > top))
+                        {
+                            objects[innerIndex].mType = NULL_OBJECT;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
                  int width, int height)
 {
     uint32_t count = objects.size();
-    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
+    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count;)
     {
-        if(objects[index].mPosition.x() < 0 || 
+        if(objects[index].mType == NULL_OBJECT ||
+            objects[index].mPosition.x() < 0 || 
             objects[index].mPosition.x() > width ||
 
             objects[index].mPosition.y() < 0 || 
@@ -18,7 +59,10 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
             objects[index] = objects.back();
             objects.pop_back();
             count--;
+            //Don't update index
+            --index;
         }
+        ++index;
     }
 }
 

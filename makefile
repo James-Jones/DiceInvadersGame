@@ -11,6 +11,10 @@ CFLAGS = $(CFLAGS) /Zi /MTd
 CFLAGS = $(CFLAGS) /O2 /MT
 !ENDIF
 
+!IF "$(SHOW_STATS)" == "1"
+CDEFINES = $(CDEFINES) -DSHOW_STATS
+!ENDIF
+
 SRC = Core.obj SceneObject.obj
 all: clean $(TARGET).exe
 
