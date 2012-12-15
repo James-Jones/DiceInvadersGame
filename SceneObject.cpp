@@ -75,13 +75,19 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
     const uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
-        if(objects[index].mType == ENEMY1 || objects[index].mType == ENEMY2)
+        const ObjectType type = objects[index].mType;
+        if(type == ENEMY1 || type == ENEMY2)
         {
             if(timeInSecs & 1)
                 objects[index].mType = ENEMY2;
             else
                 objects[index].mType = ENEMY1;
 
+            //Move when sprite changes.
+            if(type != objects[index].mType)
+            {
+                objects[index].mPosition += Vec2(8, 0);
+            }
         }
     }
 }
