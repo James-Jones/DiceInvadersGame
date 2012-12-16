@@ -42,6 +42,12 @@ const uint32_t FIRST_GENERIC_OBJECT = 1;
 const uint32_t SPRITE_SIZE = 32; //In pixels. Width=Height.
 const float F_SPRITE_SIZE = 32.0f;//Float version to help avoid casts and compiler warnings.
 
+//Pixels per second.
+const float PLAYER_SPEED = 160.0f;
+const float BOMB_SPEED = 128.0f;
+const float ROCKET_SPEED = 640.0f;
+const float ALIEN_SPEED = 8.0f;
+
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
                    const Vec2& pos,

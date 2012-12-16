@@ -77,7 +77,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     IDiceInvaders::KeyStatus keys;
     system->getKeyStatus(keys);
 
-    const float move = deltaTimeInSecs * 160.0f;
+    const float move = deltaTimeInSecs * PLAYER_SPEED;
 
     player->mPosition.moveX((keys.right * move) + (-move * keys.left));
     player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
@@ -88,7 +88,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     if(keys.fire && !fireKeyWasDown && (now-timeOfLastFire >fMaxRateOfFire))
     {
         //Fire rocket upwards from just above the player position.
-        Vec2 velocity(0.0f, -640.0f);
+        Vec2 velocity(0.0f, -ROCKET_SPEED);
         CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE/2), velocity, Vec2(0, 0), objects);
 
         timeOfLastFire = now;

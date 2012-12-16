@@ -11,7 +11,9 @@ void SpawnAliens(ObjectVector& objects, const int screenWidth)
         CreateObjects(ENEMY1,
             static_cast<uint32_t>(std::floor(screenWidth/F_SPRITE_SIZE*.75f)),
             Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
-            Vec2(1.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+            Vec2(1.0f, 0.0f),
+            Vec2(F_SPRITE_SIZE + 4.0f, 0.0f),
+            objects);
     }
 }
 
@@ -95,7 +97,7 @@ void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
         {
             CreateObjects(BOMB, 1,
                 objects[index].mPosition + Vec2(0.0f, F_SPRITE_SIZE),
-                Vec2(0, 128), Vec2(0, 0), objects);
+                Vec2(0, BOMB_SPEED), Vec2(0, 0), objects);
         }
     }
 }
@@ -231,7 +233,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
             //Move when sprite changes.
             if(type != objects[index].mType)
             {
-                objects[index].mPosition += Vec2(8 * objects[index].mVelocity.x(), 0);
+                objects[index].mPosition += Vec2(ALIEN_SPEED * objects[index].mVelocity.x(), 0);
             }
         }
     }
