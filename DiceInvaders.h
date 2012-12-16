@@ -7,7 +7,7 @@ struct ISprite
 	virtual void destroy() = 0;
 
 	// Draw the sprite at the given position.
-	// Valid coordinates are between (0,0) (upper left) and (width-32, height-32) (lower right).
+	// Valid coordinates are between (0,32) (upper left) and (width-32, height) (lower right).
 	// (All sprites are 32*32 pixels, clipping is not supported)
 	virtual void draw(int x, int y) = 0;
 };

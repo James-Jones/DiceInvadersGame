@@ -24,6 +24,14 @@ struct CommonSceneObjectData
     Vec2 mVelocity;
 };
 
+struct Box
+{
+    float mLeft;
+    float mRight;
+    float mTop;
+    float mBottom;
+};
+
 //Player is object 0.
 const uint32_t FIRST_GENERIC_OBJECT = 1;
 
@@ -54,5 +62,14 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
 
 void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
                  int floorLastTime, int floorNewTime);
+
+void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
+                           Box& box,
+                           const float clampMinX,
+                           const float clampMaxX,
+                           const float deltaTimeInSecs);
+
+void CalcAlienBBox(std::vector<CommonSceneObjectData>& objects,
+                 Box& box);
 
 #endif

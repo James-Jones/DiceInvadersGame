@@ -2,6 +2,54 @@
 #include <cmath>
 #include <assert.h>
 
+void CalcAlienBBox(std::vector<CommonSceneObjectData>& objects,
+                 Box& box)
+{
+    box.mBottom = 0.0f;
+    box.mTop = 100000.0f; //Assumes window smaller than this.
+    box.mLeft = 100000.0f;
+    box.mRight = 0.0f;
+
+    const uint32_t count = objects.size();
+    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
+    {
+        if(objects[index].mType == ENEMY1 ||
+            objects[index].mType == ENEMY2 )
+        {
+            box.mBottom = std::max(box.mBottom, objects[index].mPosition.y());
+            box.mTop = std::min(box.mTop, objects[index].mPosition.y()-SPRITE_SIZE);
+            box.mLeft = std::min(box.mLeft, objects[index].mPosition.x());
+            box.mRight = std::max(box.mRight, objects[index].mPosition.x()+SPRITE_SIZE);
+        }
+    }
+}
+
+void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
+                           Box& box,
+                           const float clampMinX,
+                           const float clampMaxX,
+                           const float deltaTimeInSecs)
+{
+    const uint32_t count = objects.size();
+
+    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
+    {
+        CommonSceneObjectData& obj = objects[index];
+
+        if((objects[index].mType == ENEMY1 ||
+            objects[index].mType == ENEMY2))
+        {
+            objects[index].mPosition += Vec2(0, F_SPRITE_SIZE);//Dropd down
+            objects[index].mVelocity = Vec2(-1*objects[index].mVelocity.x(), objects[index].mVelocity.y());//Reverse x-direction
+
+            //Snap position away from the edge so it does not get culled during
+            //CullObjects pass
+            const float clampedX = std::min(std::max(clampMinX, objects[index].mPosition.x()), clampMaxX);
+            objects[index].mPosition = Vec2(clampedX, objects[index].mPosition.y());
+        }
+    }
+}
+
 //Pick a random object each second. If the object is an alien
 //then it fires a bomb.
 void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
@@ -85,7 +133,6 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                 if((ry < bottom) && (ry > top))
                 {
                     hitCounts[objects[innerIndex].mType]++;
-                    //objects[innerIndex].mType = NULL_OBJECT;
                     objects[index].mType = NULL_OBJECT;
                 }
             }
@@ -135,7 +182,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
             //Move when sprite changes.
             if(type != objects[index].mType)
             {
-                objects[index].mPosition += Vec2(8, 0);
+                objects[index].mPosition += Vec2(8 * objects[index].mVelocity.x(), 0);
             }
         }
     }

@@ -146,6 +146,16 @@ void GameScreen(IDiceInvaders* system,
         state.mSprites[PLAYER]->draw(x, y);
     }
 
+    {
+        Box mAlienBBox;//Bounding box of ALL aliens
+        CalcAlienBBox(state.mObjects, mAlienBBox);
+
+        bool hitLeft =  mAlienBBox.mLeft <= 0;
+        bool hitRight = mAlienBBox.mRight >= (state.mScreenWidth);
+        if(hitLeft || hitRight)
+            AliensChangeDirection(state.mObjects, mAlienBBox, 0, state.mScreenWidth-SPRITE_SIZE-1, deltaTimeInSecs);
+    }
+
     MoveObjects(state.mObjects, deltaTimeInSecs);
 
     CullObjects(state.mObjects, state.mScreenWidth, state.mScreenHeight-state.HudWidth);
@@ -200,13 +210,22 @@ void InitGameState(IDiceInvaders* system, GameState& gameState)
     gameState.mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
     gameState.mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
 
-    for(int i =0; i < 8; ++i)
+    const int NumAlienRows = 8;
+    for(int i =0; i < NumAlienRows; ++i)
     {
         //One row of aliens.
-        CreateObjects(ENEMY1, static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
-            Vec2(0.0f, F_SPRITE_SIZE * i),
-            Vec2(0.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), gameState.mObjects);
+        CreateObjects(ENEMY1,
+            static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
+            Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
+            //Vec2(fScreenWidth-128, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
+            //Vec2(64, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
+            Vec2(1.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), gameState.mObjects);
     }
+    
+    /*gameState.mAlienBBox.mLeft = 0.0f;
+    gameState.mAlienBBox.mRight = NumAlienRows * F_SPRITE_SIZE;
+    gameState.mAlienBBox.mTop = F_SPRITE_SIZE;
+    gameState.mAlienBBox.mBottom = F_SPRITE_SIZE + F_SPRITE_SIZE * NumAlienRows;*/
 
     gameState.mLastTime = system->getElapsedTime();
     gameState.mTimeOfLastFire = gameState.mLastTime;
