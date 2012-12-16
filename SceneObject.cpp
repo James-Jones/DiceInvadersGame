@@ -188,14 +188,12 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count;)
     {
         if(objects[index].mType == NULL_OBJECT ||
-            objects[index].mPosition.x() < 0 || 
-            objects[index].mPosition.x() > width ||
+            objects[index].mPosition.x() < -1 || 
+            objects[index].mPosition.x() > width+1 ||
 
-            objects[index].mPosition.y() < 0 || 
-            objects[index].mPosition.y() > height)
+            objects[index].mPosition.y() < -1 || 
+            objects[index].mPosition.y() > height+1)
         {
-            assert(objects[index].mType != ENEMY1);//for debugging. Should only cull these
-            assert(objects[index].mType != ENEMY2);//objects when they hit the bottom of the screen.
             cullCounts[objects[index].mType]++;
 
             //Best to delete from the end of vector. Swap with the end object
