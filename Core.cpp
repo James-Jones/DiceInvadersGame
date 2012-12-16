@@ -79,16 +79,8 @@ void ProcessKeyboardInput(IDiceInvaders* system,
 
     const float move = deltaTimeInSecs * 160.0f;
 
-    if (keys.right)
-    {
-        player->mPosition.moveX(move);
-        player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
-    }
-    else if (keys.left)
-    {
-        player->mPosition.moveX(-move);
-        player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
-    }
+    player->mPosition.moveX((keys.right * move) + (-move * keys.left));
+    player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
 
     const float fMaxRateOfFire = 0.2f;
     const float now = system->getElapsedTime();
@@ -153,7 +145,7 @@ void GameScreen(IDiceInvaders* system,
         bool hitLeft =  mAlienBBox.mLeft <= 0;
         bool hitRight = mAlienBBox.mRight >= (state.mScreenWidth);
         if(hitLeft || hitRight)
-            AliensChangeDirection(state.mObjects, mAlienBBox, 0, state.mScreenWidth-SPRITE_SIZE-1, deltaTimeInSecs);
+            AliensChangeDirection(state.mObjects, mAlienBBox, 0, state.mScreenWidth-F_SPRITE_SIZE-1.0f, deltaTimeInSecs);
     }
 
     MoveObjects(state.mObjects, deltaTimeInSecs);

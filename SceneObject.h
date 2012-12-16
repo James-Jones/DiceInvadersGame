@@ -82,6 +82,6 @@ void SortObjectsByType(std::vector<CommonSceneObjectData>& objects);
 void CountAliens(ObjectVector& objects,
                int& count);
 
-void SpawnAliens(ObjectVector& objects, const float fScreenWidth);
+void SpawnAliens(ObjectVector& objects, const int screenWidth);
 
 #endif

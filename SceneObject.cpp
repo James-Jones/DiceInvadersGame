@@ -2,14 +2,14 @@
 #include <cmath>
 #include <assert.h>
 
-void SpawnAliens(ObjectVector& objects, const float fScreenWidth)
+void SpawnAliens(ObjectVector& objects, const int screenWidth)
 {
     const int NumAlienRows = 8;
     for(int i =0; i < NumAlienRows; ++i)
     {
         //One row of aliens.
         CreateObjects(ENEMY1,
-            static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
+            static_cast<uint32_t>(std::floor(screenWidth/F_SPRITE_SIZE*.75f)),
             Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
             Vec2(1.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
     }
@@ -22,7 +22,7 @@ static void SortObjectsByType(std::vector<CommonSceneObjectData>& objects)
     while(swapped)
     {
         swapped = false;
-        for(int i = 1; i < objects.size(); ++i)
+        for(size_t i = 1; i < objects.size(); ++i)
         {
             if(objects[i-1].mType > objects[i].mType)
             {
@@ -95,7 +95,7 @@ void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
         {
             CreateObjects(BOMB, 1,
                 objects[index].mPosition + Vec2(0.0f, F_SPRITE_SIZE),
-                Vec2(0, 32), Vec2(0, 0), objects);
+                Vec2(0, 128), Vec2(0, 0), objects);
         }
     }
 }
