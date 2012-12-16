@@ -63,37 +63,40 @@ struct GameState
     int mFloorLastTime;
     float mTimeOfLastFire;
     int mFireKeyWasDown;
-    std::vector <CommonSceneObjectData> mObjects;
+    SceneObjectVector mObjects;
     ISprite* mSprites[NUM_OBJECT_TYPES];
 };
 
 void ProcessKeyboardInput(IDiceInvaders* system,
-                          CommonSceneObjectData* player,
-                          std::vector <CommonSceneObjectData>& objects,
-                          float deltaTimeInSecs,
-                          float& timeOfLastFire,
-                          int& fireKeyWasDown)
+                          GameState& state,
+                          const float deltaTimeInSecs)
 {
     IDiceInvaders::KeyStatus keys;
     system->getKeyStatus(keys);
 
     const float move = deltaTimeInSecs * PLAYER_SPEED;
 
+    SceneObjectData* player = &state.mObjects[0];
+
     player->mPosition.moveX((keys.right * move) + (-move * keys.left));
-    player->mPosition.clampX(0.0f, 640.0f-F_SPRITE_SIZE);
+    player->mPosition.clampX(0.0f, state.mScreenWidth-F_SPRITE_SIZE);
 
     const float fMaxRateOfFire = 0.2f;
     const float now = system->getElapsedTime();
 
-    if(keys.fire && !fireKeyWasDown && (now-timeOfLastFire >fMaxRateOfFire))
+    if(keys.fire)
     {
-        //Fire rocket upwards from just above the player position.
-        Vec2 velocity(0.0f, -ROCKET_SPEED);
-        CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE/2), velocity, Vec2(0, 0), objects);
+        if(!state.mFireKeyWasDown || 
+            (now-state.mTimeOfLastFire > ROCKET_RATE_OF_FIRE))
+        {
+            //Fire rocket upwards from just above the player position.
+            Vec2 velocity(0.0f, -ROCKET_SPEED);
+            CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE/2), velocity, Vec2(0, 0), state.mObjects);
 
-        timeOfLastFire = now;
+            state.mTimeOfLastFire = now;
+        }
     }
-    fireKeyWasDown = keys.fire;
+    state.mFireKeyWasDown = keys.fire;
 }
 
 void ResultScreen(IDiceInvaders* system,
@@ -179,11 +182,8 @@ void GameScreen(IDiceInvaders* system,
     AliensRandomFire(state.mObjects, state.mFloorLastTime, iFloorNewTime);
 
     ProcessKeyboardInput(system,
-        &state.mObjects[0],
-        state.mObjects,
-        deltaTimeInSecs,
-        state.mTimeOfLastFire,
-        state.mFireKeyWasDown);
+        state,
+        deltaTimeInSecs);
 
     int alienCount = 0;
     CountAliens(state.mObjects, alienCount);

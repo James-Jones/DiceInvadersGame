@@ -2,14 +2,14 @@
 #include <cmath>
 #include <assert.h>
 
-void SpawnAliens(ObjectVector& objects, const int screenWidth)
+void SpawnAliens(SceneObjectVector& objects, const int screenWidth)
 {
     const int NumAlienRows = 8;
     for(int i =0; i < NumAlienRows; ++i)
     {
         //One row of aliens.
         CreateObjects(ENEMY1,
-            static_cast<uint32_t>(std::floor(screenWidth/F_SPRITE_SIZE*.75f)),
+            static_cast<uint32_t>(std::floor(screenWidth/F_SPRITE_SIZE*0.66f)),
             Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
             Vec2(1.0f, 0.0f),
             Vec2(F_SPRITE_SIZE + 4.0f, 0.0f),
@@ -17,7 +17,7 @@ void SpawnAliens(ObjectVector& objects, const int screenWidth)
     }
 }
 
-static void SortObjectsByType(std::vector<CommonSceneObjectData>& objects)
+static void SortObjectsByType(SceneObjectVector& objects)
 {
     //Buble sort objects so that entities of the same type are next to each other.
     bool swapped = true;
@@ -35,8 +35,7 @@ static void SortObjectsByType(std::vector<CommonSceneObjectData>& objects)
     }
 }
 
-
-void CalcAlienBBox(ObjectVector& objects,
+void CalcAlienBBox(SceneObjectVector& objects,
                    Box& box)
 {
     box.mBottom = 0.0f;
@@ -44,7 +43,7 @@ void CalcAlienBBox(ObjectVector& objects,
     box.mLeft = 100000.0f;
     box.mRight = 0.0f;
 
-    for(ObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
+    for(SceneObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
     {
         if(itor->mType == ENEMY1 || itor->mType == ENEMY2)
         {
@@ -56,7 +55,7 @@ void CalcAlienBBox(ObjectVector& objects,
     }
 }
 
-void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
+void AliensChangeDirection(SceneObjectVector& objects,
                            Box& box,
                            const float clampMinX,
                            const float clampMaxX,
@@ -66,7 +65,7 @@ void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
 
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
-        CommonSceneObjectData& obj = objects[index];
+        SceneObjectData& obj = objects[index];
 
         if((objects[index].mType == ENEMY1 ||
             objects[index].mType == ENEMY2))
@@ -84,7 +83,7 @@ void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
 
 //Pick a random object each second. If the object is an alien
 //then it fires a bomb.
-void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
+void AliensRandomFire(SceneObjectVector& objects,
                  int floorLastTime, int floorNewTime)
 {
     if(floorLastTime != floorNewTime) //At least one second has passed.
@@ -104,7 +103,7 @@ void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
 
 //Currently a simple discrete method. Will fail to detect
 //collision if not called frequently enough.
-void CollideObjects(std::vector<CommonSceneObjectData>& objects,
+void CollideObjects(SceneObjectVector& objects,
                     int hitCounts[NUM_OBJECT_TYPES])
 {
     const uint32_t count = objects.size();
@@ -181,7 +180,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
     }
 }
 
-void CullObjects(std::vector<CommonSceneObjectData>& objects,
+void CullObjects(SceneObjectVector& objects,
                  const int width, const int height,
                  int cullCounts[NUM_OBJECT_TYPES])
 {
@@ -216,8 +215,8 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
     }
 }
 
-void Animate(std::vector<CommonSceneObjectData>& objects,
-                 const int timeInSecs)
+void Animate(SceneObjectVector& objects,
+             const int timeInSecs)
 {
     const uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
@@ -239,7 +238,7 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
     }
 }
 
-void MoveObjects(std::vector<CommonSceneObjectData>& objects,
+void MoveObjects(SceneObjectVector& objects,
                  const float deltaTimeInSecs)
 {
     const uint32_t count = objects.size();
@@ -249,7 +248,7 @@ void MoveObjects(std::vector<CommonSceneObjectData>& objects,
     }
 }
 
-void DrawObjects(std::vector<CommonSceneObjectData>& objects,
+void DrawObjects(SceneObjectVector& objects,
                  ISprite* __restrict sprites[NUM_OBJECT_TYPES])
 {
     const uint32_t count = objects.size();
@@ -264,10 +263,10 @@ void DrawObjects(std::vector<CommonSceneObjectData>& objects,
 
 //Animate, CalcAlienBBox, AliensChangeDirection and AliensRandomFire only
 //operate on alien objects. 
-void CountAliens(ObjectVector& objects,
+void CountAliens(SceneObjectVector& objects,
                int& count)
 {
-    for(ObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
+    for(SceneObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
     {
         if(itor->mType == ENEMY1 || itor->mType == ENEMY2)
             count++;
@@ -280,13 +279,13 @@ void CreateObjects(const ObjectType type,
                    const Vec2& pos,
                    const Vec2& vel,
                    const Vec2& deltaPos,
-                   std::vector<CommonSceneObjectData>& objects)
+                   SceneObjectVector& objects)
 {
     assert(type < NUM_OBJECT_TYPES);
     Vec2 accumPos = pos;
     for(uint32_t index = 0; index < count; ++index)
     {
-        CommonSceneObjectData newObject;
+        SceneObjectData newObject;
         newObject.mType = type;
         newObject.mPosition = accumPos;
         newObject.mVelocity = vel;

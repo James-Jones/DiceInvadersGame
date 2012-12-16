@@ -18,15 +18,15 @@ enum ObjectType {
     NUM_OBJECT_TYPES,
 };
 
-struct CommonSceneObjectData
+struct SceneObjectData
 {
-    CommonSceneObjectData(){}
+    SceneObjectData(){}
     ObjectType mType;
     Vec2 mPosition;
     Vec2 mVelocity;
 };
 
-typedef std::vector<CommonSceneObjectData> ObjectVector;
+typedef std::vector<SceneObjectData> SceneObjectVector;
 
 struct Box
 {
@@ -45,49 +45,53 @@ const float F_SPRITE_SIZE = 32.0f;//Float version to help avoid casts and compil
 //Pixels per second.
 const float PLAYER_SPEED = 160.0f;
 const float BOMB_SPEED = 128.0f;
-const float ROCKET_SPEED = 640.0f;
+const float ROCKET_SPEED = BOMB_SPEED*2;
 const float ALIEN_SPEED = 8.0f;
+
+//Seconds between rocket launch when
+//fire key held down.
+const float ROCKET_RATE_OF_FIRE = 0.3f;
 
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
                    const Vec2& pos,
                    const Vec2& vel,
                    const Vec2& deltaPos,
-                   std::vector<CommonSceneObjectData>& objects);
+                   SceneObjectVector& objects);
 
-void DrawObjects(std::vector<CommonSceneObjectData>& objects,
+void DrawObjects(SceneObjectVector& objects,
                  ISprite* __restrict sprites[NUM_OBJECT_TYPES]);
 
-void MoveObjects(std::vector<CommonSceneObjectData>& objects,
+void MoveObjects(SceneObjectVector& objects,
                  const float deltaTimeInSecs);
 
-void Animate(std::vector<CommonSceneObjectData>& objects,
+void Animate(SceneObjectVector& objects,
                  const int timeInSecs);
 
-void CullObjects(std::vector<CommonSceneObjectData>& objects,
+void CullObjects(SceneObjectVector& objects,
                  const int width, const int height,
                  int cullCounts[NUM_OBJECT_TYPES]);
 
-void CollideObjects(std::vector<CommonSceneObjectData>& objects,
+void CollideObjects(SceneObjectVector& objects,
                     int hitCounts[NUM_OBJECT_TYPES]);
 
-void AliensRandomFire(std::vector<CommonSceneObjectData>& objects,
+void AliensRandomFire(SceneObjectVector& objects,
                  int floorLastTime, int floorNewTime);
 
-void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
+void AliensChangeDirection(SceneObjectVector& objects,
                            Box& box,
                            const float clampMinX,
                            const float clampMaxX,
                            const float deltaTimeInSecs);
 
-void CalcAlienBBox(ObjectVector& objects,
+void CalcAlienBBox(SceneObjectVector& objects,
                    Box& box);
 
-void SortObjectsByType(std::vector<CommonSceneObjectData>& objects);
+void SortObjectsByType(SceneObjectVector& objects);
 
-void CountAliens(ObjectVector& objects,
+void CountAliens(SceneObjectVector& objects,
                int& count);
 
-void SpawnAliens(ObjectVector& objects, const int screenWidth);
+void SpawnAliens(SceneObjectVector& objects, const int screenWidth);
 
 #endif
