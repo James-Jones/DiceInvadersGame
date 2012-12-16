@@ -203,7 +203,7 @@ void GameScreen(IDiceInvaders* system,
     }
 }
 
-void InitGameState(IDiceInvaders* system, GameState& gameState)
+void InitLevel(IDiceInvaders* system, GameState& gameState)
 {
     gameState.mObjects.reserve(512);
     const float fScreenWidth = static_cast<float>(gameState.mScreenWidth);
@@ -238,8 +238,8 @@ int APIENTRY WinMain(
 	DiceInvadersLib lib("DiceInvaders.dll");
 	IDiceInvaders * const system = lib.get();
 
-    const int screenWidth = 640;
-    const int screenHeight = 480;
+    const int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN)/3*2;
+    const int screenHeight = GetSystemMetrics(SM_CYFULLSCREEN)/3*2;
 
     if(system->init(screenWidth, screenHeight) == false)
     {
@@ -248,7 +248,7 @@ int APIENTRY WinMain(
 
     GameState gameState(screenWidth, screenHeight);
 
-    InitGameState(system, gameState);
+    InitLevel(system, gameState);
 
     bool bSystemOK = system->update();
 

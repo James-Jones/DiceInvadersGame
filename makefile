@@ -2,6 +2,7 @@ TARGET = DiceInvaders
 LL=link.exe -nologo
 CC=cl.exe -nologo
 CFLAGS = /EHsc /W3
+LIBS = /DEFAULTLIB:User32.lib
 
 !IF "$(DEBUG)" == "1"
 !message Building DEBUG version
@@ -24,7 +25,7 @@ all: clean $(TARGET).exe
 
 # Link the source components into the executable
 $(TARGET).exe: $(SRC)
-	$(LL) $(LFLAGS) $(SRC) /OUT:$(TARGET).exe
+	$(LL) $(LFLAGS) $(LIBS) $(SRC) /OUT:$(TARGET).exe
 
 clean: dummy
 	-@del $(TARGET).exe
