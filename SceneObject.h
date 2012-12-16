@@ -6,12 +6,14 @@
 #include "pstdint.h"
 #include "Vec2.h"
 
+//Objects will be ordered using the sequence declared here.
+//i.e. player before aliens before projectiles.
 enum ObjectType {
-    ROCKET,
-    BOMB,
     PLAYER,
     ENEMY1,
     ENEMY2,
+    BOMB,
+    ROCKET,
     NULL_OBJECT,//Marked for deletion. Deleted by CullObjects
     NUM_OBJECT_TYPES,
 };
@@ -23,6 +25,8 @@ struct CommonSceneObjectData
     Vec2 mPosition;
     Vec2 mVelocity;
 };
+
+typedef std::vector<CommonSceneObjectData> ObjectVector;
 
 struct Box
 {
@@ -55,7 +59,8 @@ void Animate(std::vector<CommonSceneObjectData>& objects,
                  const int timeInSecs);
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
-                 const int width, const int height);
+                 const int width, const int height,
+                 int cullCounts[NUM_OBJECT_TYPES]);
 
 void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                     int hitCounts[NUM_OBJECT_TYPES]);
@@ -69,7 +74,14 @@ void AliensChangeDirection(std::vector<CommonSceneObjectData>& objects,
                            const float clampMaxX,
                            const float deltaTimeInSecs);
 
-void CalcAlienBBox(std::vector<CommonSceneObjectData>& objects,
-                 Box& box);
+void CalcAlienBBox(ObjectVector& objects,
+                   Box& box);
+
+void SortObjectsByType(std::vector<CommonSceneObjectData>& objects);
+
+void CountAliens(ObjectVector& objects,
+               int& count);
+
+void SpawnAliens(ObjectVector& objects, const float fScreenWidth);
 
 #endif

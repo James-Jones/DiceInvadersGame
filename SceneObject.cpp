@@ -2,24 +2,54 @@
 #include <cmath>
 #include <assert.h>
 
-void CalcAlienBBox(std::vector<CommonSceneObjectData>& objects,
-                 Box& box)
+void SpawnAliens(ObjectVector& objects, const float fScreenWidth)
+{
+    const int NumAlienRows = 8;
+    for(int i =0; i < NumAlienRows; ++i)
+    {
+        //One row of aliens.
+        CreateObjects(ENEMY1,
+            static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
+            Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
+            Vec2(1.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), objects);
+    }
+}
+
+static void SortObjectsByType(std::vector<CommonSceneObjectData>& objects)
+{
+    //Buble sort objects so that entities of the same type are next to each other.
+    bool swapped = true;
+    while(swapped)
+    {
+        swapped = false;
+        for(int i = 1; i < objects.size(); ++i)
+        {
+            if(objects[i-1].mType > objects[i].mType)
+            {
+                std::swap(objects[i-1], objects[i]);
+                swapped = true;
+            }
+        }
+    }
+}
+
+
+void CalcAlienBBox(ObjectVector& objects,
+                   Box& box)
 {
     box.mBottom = 0.0f;
     box.mTop = 100000.0f; //Assumes window smaller than this.
     box.mLeft = 100000.0f;
     box.mRight = 0.0f;
 
-    const uint32_t count = objects.size();
-    for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
+    for(ObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
     {
-        if(objects[index].mType == ENEMY1 ||
-            objects[index].mType == ENEMY2 )
+        if(itor->mType == ENEMY1 || itor->mType == ENEMY2)
         {
-            box.mBottom = std::max(box.mBottom, objects[index].mPosition.y());
-            box.mTop = std::min(box.mTop, objects[index].mPosition.y()-SPRITE_SIZE);
-            box.mLeft = std::min(box.mLeft, objects[index].mPosition.x());
-            box.mRight = std::max(box.mRight, objects[index].mPosition.x()+SPRITE_SIZE);
+            box.mBottom = std::max(box.mBottom, itor->mPosition.y());
+            box.mTop = std::min(box.mTop, itor->mPosition.y()-SPRITE_SIZE);
+            box.mLeft = std::min(box.mLeft, itor->mPosition.x());
+            box.mRight = std::max(box.mRight, itor->mPosition.x()+SPRITE_SIZE);
         }
     }
 }
@@ -76,6 +106,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                     int hitCounts[NUM_OBJECT_TYPES])
 {
     const uint32_t count = objects.size();
+    bool bResort = false;
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
         if(objects[index].mType == ROCKET)
@@ -104,6 +135,7 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                             hitCounts[objects[innerIndex].mType]++;
                             objects[innerIndex].mType = NULL_OBJECT;
                             objects[index].mType = NULL_OBJECT;
+                            bResort = true;
                         }
                     }
                 }
@@ -134,16 +166,25 @@ void CollideObjects(std::vector<CommonSceneObjectData>& objects,
                 {
                     hitCounts[objects[innerIndex].mType]++;
                     objects[index].mType = NULL_OBJECT;
+                    bResort = true;
                 }
             }
         }
     }
+
+    //Some objects may have changed to null type.
+    if(bResort)
+    {
+        //SortObjectsByType(objects);
+    }
 }
 
 void CullObjects(std::vector<CommonSceneObjectData>& objects,
-                 const int width, const int height)
+                 const int width, const int height,
+                 int cullCounts[NUM_OBJECT_TYPES])
 {
     uint32_t count = objects.size();
+    bool bResort = false;
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count;)
     {
         if(objects[index].mType == NULL_OBJECT ||
@@ -153,6 +194,10 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
             objects[index].mPosition.y() < 0 || 
             objects[index].mPosition.y() > height)
         {
+            assert(objects[index].mType != ENEMY1);//for debugging. Should only cull these
+            assert(objects[index].mType != ENEMY2);//objects when they hit the bottom of the screen.
+            cullCounts[objects[index].mType]++;
+
             //Best to delete from the end of vector. Swap with the end object
             //then delete.
             objects[index] = objects.back();
@@ -160,8 +205,14 @@ void CullObjects(std::vector<CommonSceneObjectData>& objects,
             count--;
             //Don't update index
             --index;
+            bResort = true;
         }
         ++index;
+    }
+
+    if(bResort)
+    {
+        //SortObjectsByType(objects);
     }
 }
 
@@ -210,6 +261,19 @@ void DrawObjects(std::vector<CommonSceneObjectData>& objects,
     }
 }
 
+
+//Animate, CalcAlienBBox, AliensChangeDirection and AliensRandomFire only
+//operate on alien objects. 
+void CountAliens(ObjectVector& objects,
+               int& count)
+{
+    for(ObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
+    {
+        if(itor->mType == ENEMY1 || itor->mType == ENEMY2)
+            count++;
+    }
+}
+
 //Add <count> objects of <type>. Intitialse with given position and veclocity.
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
@@ -230,4 +294,6 @@ void CreateObjects(const ObjectType type,
 
         accumPos += deltaPos;
     }
+
+    //SortObjectsByType(objects);
 }

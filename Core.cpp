@@ -158,7 +158,18 @@ void GameScreen(IDiceInvaders* system,
 
     MoveObjects(state.mObjects, deltaTimeInSecs);
 
-    CullObjects(state.mObjects, state.mScreenWidth, state.mScreenHeight-state.HudWidth);
+    int cullCounts[NUM_OBJECT_TYPES];
+    for(int i=0; i<NUM_OBJECT_TYPES;++i)
+    {
+        cullCounts[i] = 0;
+    }
+    CullObjects(state.mObjects, state.mScreenWidth, state.mScreenHeight-state.HudWidth, cullCounts);
+
+    if(cullCounts[ENEMY1] || cullCounts[ENEMY2])
+    {
+        //Alien reached the bottom of the screen
+        state.mPlayerLives = 0;
+    }
 
     Animate(state.mObjects, static_cast<int>(std::floor(newTime)));
 
@@ -181,6 +192,14 @@ void GameScreen(IDiceInvaders* system,
         deltaTimeInSecs,
         state.mTimeOfLastFire,
         state.mFireKeyWasDown);
+
+    int alienCount = 0;
+    CountAliens(state.mObjects, alienCount);
+    if(!alienCount)
+    {
+        //No more aliens
+        SpawnAliens(state.mObjects, state.mScreenWidth);
+    }
 
     state.mFloorLastTime = iFloorNewTime;
 
@@ -210,22 +229,7 @@ void InitGameState(IDiceInvaders* system, GameState& gameState)
     gameState.mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
     gameState.mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
 
-    const int NumAlienRows = 8;
-    for(int i =0; i < NumAlienRows; ++i)
-    {
-        //One row of aliens.
-        CreateObjects(ENEMY1,
-            static_cast<uint32_t>(std::floor(fScreenWidth/F_SPRITE_SIZE*.75f)),
-            Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
-            //Vec2(fScreenWidth-128, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
-            //Vec2(64, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
-            Vec2(1.0f, 0.0f), Vec2(F_SPRITE_SIZE, 0.0f), gameState.mObjects);
-    }
-    
-    /*gameState.mAlienBBox.mLeft = 0.0f;
-    gameState.mAlienBBox.mRight = NumAlienRows * F_SPRITE_SIZE;
-    gameState.mAlienBBox.mTop = F_SPRITE_SIZE;
-    gameState.mAlienBBox.mBottom = F_SPRITE_SIZE + F_SPRITE_SIZE * NumAlienRows;*/
+    SpawnAliens(gameState.mObjects, gameState.mScreenWidth);
 
     gameState.mLastTime = system->getElapsedTime();
     gameState.mTimeOfLastFire = gameState.mLastTime;
