@@ -104,8 +104,10 @@ void ResultScreen(IDiceInvaders* system,
                 GameState& state)
 {
     char resultString[256];
-    sprintf_s(resultString, 256, "Final score is %d", state.mPlayerScore);
-    system->drawText(state.mWindowWidth/3, state.mWindowHeight/2, resultString);
+    if(sprintf_s(resultString, 256, "Final score is %d", state.mPlayerScore))
+    {
+        system->drawText(state.mWindowWidth/3, state.mWindowHeight/2, resultString);
+    }
 }
 
 void GameScreen(IDiceInvaders* system,
@@ -143,9 +145,11 @@ void GameScreen(IDiceInvaders* system,
         frame++;
         accumTime += deltaTimeInSecs;
 
-        sprintf_s(debugInfo, 512, "%d objects; %.4f ms", state.mObjects.size(),
-            avgFrameTime * 1000.0f);
-        system->drawText(0, state.mWindowHeight-64, debugInfo);
+        if(sprintf_s(debugInfo, 512, "%d objects; %.4f ms", state.mObjects.size(),
+            avgFrameTime * 1000.0f))
+        {
+            system->drawText(0, state.mWindowHeight-64, debugInfo);
+        }
     }
 #endif
 
