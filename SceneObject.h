@@ -92,8 +92,6 @@ void CalcAlienBBox(SceneObjectVector& objects,
 
 void SortObjectsByType(SceneObjectVector& objects);
 
-void CountAliens(SceneObjectVector& objects,
-               int& count);
 
 void SpawnAliens(SceneObjectVector& objects, const int windowWidth);
 

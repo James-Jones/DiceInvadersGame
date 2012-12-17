@@ -108,11 +108,12 @@ void CollideObjects(SceneObjectVector& objects,
 {
     const uint32_t count = objects.size();
     bool bResort = false;
+
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
         if(objects[index].mType == ROCKET)
         {
-            //Rocket bitmap
+            //Rocket bitmap dimensions (outside of this is black)
             //12,7
             //17,26
             const float rx = objects[index].mPosition.x() + 12;
@@ -145,13 +146,13 @@ void CollideObjects(SceneObjectVector& objects,
 
         if(objects[index].mType == BOMB)
         {
-            //Rocket bitmap
-            //12,7
-            //17,26
-            const float rx = objects[index].mPosition.x() + 12;
-            const float ry = objects[index].mPosition.y() + 7;
-            const float rx2 = rx + 5;
-            const float ry2 = ry + 19;
+            //Bomb bitmap dimensions (outside of this is black)
+            //9,8
+            //20,25
+            const float rx = objects[index].mPosition.x() + 9;
+            const float ry = objects[index].mPosition.y() + 8;
+            const float rx2 = rx + 11;
+            const float ry2 = ry + 17;
             
             const uint32_t innerIndex = 0;
 
@@ -184,14 +185,22 @@ void CullObjects(SceneObjectVector& objects,
                  const int width, const int height,
                  int cullCounts[NUM_OBJECT_TYPES])
 {
-    uint32_t count = objects.size();
     bool bResort = false;
+
+    //Delete null objects. They are sorted to be at the end of the
+    //vector.
+    assert(NULL_OBJECT == NUM_OBJECT_TYPES -1);
+    while(objects[objects.size()-1].mType == NULL_OBJECT)
+    {
+         objects.pop_back();
+         cullCounts[NULL_OBJECT]++;
+    }
+
+    uint32_t count = objects.size();
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count;)
     {
-        if(objects[index].mType == NULL_OBJECT ||
-            objects[index].mPosition.x() < -1 || 
+        if(objects[index].mPosition.x() < -1 || 
             objects[index].mPosition.x() > width+1 ||
-
             objects[index].mPosition.y() < -1 || 
             objects[index].mPosition.y() > height+1)
         {
@@ -219,6 +228,7 @@ void Animate(SceneObjectVector& objects,
              const int timeInSecs)
 {
     const uint32_t count = objects.size();
+
     for(uint32_t index = FIRST_GENERIC_OBJECT; index < count; ++index)
     {
         const ObjectType type = objects[index].mType;
@@ -257,19 +267,6 @@ void DrawObjects(SceneObjectVector& objects,
         assert(objects[index].mType < NUM_OBJECT_TYPES);
         sprites[objects[index].mType]->draw(static_cast<int>(objects[index].mPosition.x()),
                                             static_cast<int>(objects[index].mPosition.y())-SPRITE_SIZE);
-    }
-}
-
-
-//Animate, CalcAlienBBox, AliensChangeDirection and AliensRandomFire only
-//operate on alien objects. 
-void CountAliens(SceneObjectVector& objects,
-               int& count)
-{
-    for(SceneObjectVector::iterator itor = objects.begin(); itor != objects.end(); ++itor)
-    {
-        if(itor->mType == ENEMY1 || itor->mType == ENEMY2)
-            count++;
     }
 }
 

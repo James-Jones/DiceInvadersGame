@@ -60,7 +60,7 @@ struct GameState
     int mWindowHeight;
     int mPlayerScore;
     int mPlayerLives;
-    float mLastTime;//Seconds
+    float mLastTime;//Time values are in seconds.
     int mFloorLastTime;
     float mTimeOfLastFire;
     int mFireKeyWasDown;
@@ -77,24 +77,24 @@ void ProcessKeyboardInput(IDiceInvaders* system,
 
     const float move = deltaTimeInSecs * PLAYER_SPEED;
 
+    assert(PLAYER == 0);//Assume player is first in vector;
     SceneObjectData* player = &state.mObjects[0];
 
     player->mPosition.moveX((keys.right * move) + (-move * keys.left));
     player->mPosition.clampX(0.0f, state.mWindowWidth-F_SPRITE_SIZE);
 
-    const float fMaxRateOfFire = 0.2f;
-    const float now = system->getElapsedTime();
+    const float currentTime = system->getElapsedTime();
 
     if(keys.fire)
     {
         if(!state.mFireKeyWasDown || 
-            (now-state.mTimeOfLastFire > ROCKET_RATE_OF_FIRE))
+            (currentTime-state.mTimeOfLastFire > ROCKET_RATE_OF_FIRE))
         {
             //Fire rocket upwards from just above the player position.
             Vec2 velocity(0.0f, -ROCKET_SPEED);
             CreateObjects(ROCKET, 1, player->mPosition - Vec2(0, SPRITE_SIZE/2), velocity, Vec2(0, 0), state.mObjects);
 
-            state.mTimeOfLastFire = now;
+            state.mTimeOfLastFire = currentTime;
         }
     }
     state.mFireKeyWasDown = keys.fire;
@@ -103,8 +103,9 @@ void ProcessKeyboardInput(IDiceInvaders* system,
 void ResultScreen(IDiceInvaders* system,
                 GameState& state)
 {
-    char resultString[256];
-    if(sprintf_s(resultString, 256, "Final score is %d", state.mPlayerScore))
+    const int resultStringSize = 16+MAX_SCORE_DIGITS;
+    char resultString[resultStringSize];
+    if(sprintf_s(resultString, resultStringSize, "Final score is %d", state.mPlayerScore))
     {
         system->drawText(state.mWindowWidth/3, state.mWindowHeight/2, resultString);
     }
@@ -118,15 +119,17 @@ void GameScreen(IDiceInvaders* system,
     const int iFloorNewTime = static_cast<int>(std::floor(newTime));
 
     {
-        char scoreString[MAX_SCORE_DIGITS+8];
-        if(sprintf_s(scoreString, MAX_SCORE_DIGITS+8, "Score: %d", state.mPlayerScore))
+        const int scoreStringSize = MAX_SCORE_DIGITS+8;
+        char scoreString[scoreStringSize];
+        if(sprintf_s(scoreString, scoreStringSize, "Score: %d", state.mPlayerScore))
         {
             system->drawText(0, state.mWindowHeight-SPRITE_SIZE, scoreString);
         }
     }
 #if defined(SHOW_STATS)
     {
-        char debugInfo[512];
+        const int debugInfoSize = 128;
+        char debugInfo[debugInfoSize];
 
         //Average milliseconds per frame over a 1 second period.
         static float startTime = newTime;
@@ -145,7 +148,7 @@ void GameScreen(IDiceInvaders* system,
         frame++;
         accumTime += deltaTimeInSecs;
 
-        if(sprintf_s(debugInfo, 512, "%d objects; %.4f ms", state.mObjects.size(),
+        if(sprintf_s(debugInfo, debugInfoSize, "%d objects; %.4f ms", state.mObjects.size(),
             avgFrameTime * 1000.0f))
         {
             system->drawText(0, state.mWindowHeight-64, debugInfo);
@@ -191,7 +194,7 @@ void GameScreen(IDiceInvaders* system,
         state.mPlayerLives = 0;
     }
 
-    Animate(state.mObjects, static_cast<int>(std::floor(newTime)));
+    Animate(state.mObjects, iFloorNewTime);
 
     int hitCounts[NUM_OBJECT_TYPES];
     for(int i=0; i<NUM_OBJECT_TYPES;++i)
@@ -212,13 +215,10 @@ void GameScreen(IDiceInvaders* system,
         state,
         deltaTimeInSecs);
 
-    int alienCount = 0;
-    CountAliens(state.mObjects, alienCount);
-    if(!alienCount)
-    {
-        //No more aliens
+    //Check for no more aliens. The objects are sorted
+    //so if the second object is not alien then there are none
+    if(state.mObjects.size() > 1 && state.mObjects[1].mType > ENEMY2)
         SpawnAliens(state.mObjects, state.mWindowWidth);
-    }
 
     state.mFloorLastTime = iFloorNewTime;
 
