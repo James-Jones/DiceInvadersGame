@@ -45,12 +45,15 @@ const float F_SPRITE_SIZE = 32.0f;//Float version to help avoid casts and compil
 //Pixels per second.
 const float PLAYER_SPEED = 160.0f;
 const float BOMB_SPEED = 128.0f;
-const float ROCKET_SPEED = BOMB_SPEED*2;
+const float ROCKET_SPEED = BOMB_SPEED*3;
 const float ALIEN_SPEED = 8.0f;
 
 //Seconds between rocket launch when
 //fire key held down.
 const float ROCKET_RATE_OF_FIRE = 0.3f;
+
+const int MAX_SCORE = 99999999;
+const int MAX_SCORE_DIGITS = 8;
 
 void CreateObjects(const ObjectType type,
                    const uint32_t count,
@@ -92,6 +95,6 @@ void SortObjectsByType(SceneObjectVector& objects);
 void CountAliens(SceneObjectVector& objects,
                int& count);
 
-void SpawnAliens(SceneObjectVector& objects, const int screenWidth);
+void SpawnAliens(SceneObjectVector& objects, const int windowWidth);
 
 #endif

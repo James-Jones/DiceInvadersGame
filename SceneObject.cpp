@@ -2,14 +2,14 @@
 #include <cmath>
 #include <assert.h>
 
-void SpawnAliens(SceneObjectVector& objects, const int screenWidth)
+void SpawnAliens(SceneObjectVector& objects, const int windowWidth)
 {
     const int NumAlienRows = 8;
     for(int i =0; i < NumAlienRows; ++i)
     {
         //One row of aliens.
         CreateObjects(ENEMY1,
-            static_cast<uint32_t>(std::floor(screenWidth/F_SPRITE_SIZE*0.66f)),
+            static_cast<uint32_t>(std::floor(windowWidth/F_SPRITE_SIZE*0.66f)),
             Vec2(1.0f, F_SPRITE_SIZE + F_SPRITE_SIZE * i),
             Vec2(1.0f, 0.0f),
             Vec2(F_SPRITE_SIZE + 4.0f, 0.0f),
@@ -176,7 +176,7 @@ void CollideObjects(SceneObjectVector& objects,
     //Some objects may have changed to null type.
     if(bResort)
     {
-        //SortObjectsByType(objects);
+        SortObjectsByType(objects);
     }
 }
 
@@ -211,7 +211,7 @@ void CullObjects(SceneObjectVector& objects,
 
     if(bResort)
     {
-        //SortObjectsByType(objects);
+        SortObjectsByType(objects);
     }
 }
 
@@ -294,5 +294,5 @@ void CreateObjects(const ObjectType type,
         accumPos += deltaPos;
     }
 
-    //SortObjectsByType(objects);
+    SortObjectsByType(objects);
 }

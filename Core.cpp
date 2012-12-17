@@ -1,4 +1,5 @@
 #define _CRTDBG_MAP_ALLOC
+#define NOMINMAX
 #include <stdlib.h>
 #include <crtdbg.h>
 
@@ -47,16 +48,16 @@ struct GameState
     static const int HudWidth = 32;
     static const int MaxLives = 3;
 
-    GameState(int screenW, int screenH) : mScreenWidth(screenW),
-        mScreenHeight(screenH),
+    GameState(int windowW, int windowH) : mWindowWidth(windowW),
+        mWindowHeight(windowH),
         mPlayerScore(0),
         mPlayerLives(MaxLives),
         mFireKeyWasDown(0)
     {
     }
 
-    int mScreenWidth;
-    int mScreenHeight;
+    int mWindowWidth;
+    int mWindowHeight;
     int mPlayerScore;
     int mPlayerLives;
     float mLastTime;//Seconds
@@ -79,7 +80,7 @@ void ProcessKeyboardInput(IDiceInvaders* system,
     SceneObjectData* player = &state.mObjects[0];
 
     player->mPosition.moveX((keys.right * move) + (-move * keys.left));
-    player->mPosition.clampX(0.0f, state.mScreenWidth-F_SPRITE_SIZE);
+    player->mPosition.clampX(0.0f, state.mWindowWidth-F_SPRITE_SIZE);
 
     const float fMaxRateOfFire = 0.2f;
     const float now = system->getElapsedTime();
@@ -104,7 +105,7 @@ void ResultScreen(IDiceInvaders* system,
 {
     char resultString[256];
     sprintf_s(resultString, 256, "Final score is %d", state.mPlayerScore);
-    system->drawText(state.mScreenWidth/3, state.mScreenHeight/2, resultString);
+    system->drawText(state.mWindowWidth/3, state.mWindowHeight/2, resultString);
 }
 
 void GameScreen(IDiceInvaders* system,
@@ -115,16 +116,36 @@ void GameScreen(IDiceInvaders* system,
     const int iFloorNewTime = static_cast<int>(std::floor(newTime));
 
     {
-        char scoreString[8]; //Max score is 99999999
-        sprintf_s(scoreString, 8, "%d", state.mPlayerScore);
-        system->drawText(0, state.mScreenHeight-SPRITE_SIZE, scoreString);
+        char scoreString[MAX_SCORE_DIGITS+8];
+        if(sprintf_s(scoreString, MAX_SCORE_DIGITS+8, "Score: %d", state.mPlayerScore))
+        {
+            system->drawText(0, state.mWindowHeight-SPRITE_SIZE, scoreString);
+        }
     }
 #if defined(SHOW_STATS)
     {
         char debugInfo[512];
+
+        //Average milliseconds per frame over a 1 second period.
+        static float startTime = newTime;
+        static float accumTime = 0;
+        static int frame = 0;
+        static float avgFrameTime = 0;
+
+        if(accumTime > 1)//Reset approx each second
+        {
+            avgFrameTime = accumTime/frame;
+            startTime = newTime;
+            accumTime = 0;
+            frame = 0;
+        }
+
+        frame++;
+        accumTime += deltaTimeInSecs;
+
         sprintf_s(debugInfo, 512, "%d objects; %.4f ms", state.mObjects.size(),
-            deltaTimeInSecs * 1000.0f);
-        system->drawText(0, state.mScreenHeight-64, debugInfo);
+            avgFrameTime * 1000.0f);
+        system->drawText(0, state.mWindowHeight-64, debugInfo);
     }
 #endif
 
@@ -136,8 +157,8 @@ void GameScreen(IDiceInvaders* system,
     //Health. 1 player sprite for each life.
     for(int i=0; i<state.mPlayerLives; ++i)
     {
-        const int x = state.mScreenWidth-(SPRITE_SIZE*GameState::MaxLives) + SPRITE_SIZE*i;
-        const int y = state.mScreenHeight-SPRITE_SIZE;
+        const int x = state.mWindowWidth-(SPRITE_SIZE*GameState::MaxLives) + SPRITE_SIZE*i;
+        const int y = state.mWindowHeight-SPRITE_SIZE;
         state.mSprites[PLAYER]->draw(x, y);
     }
 
@@ -146,9 +167,9 @@ void GameScreen(IDiceInvaders* system,
         CalcAlienBBox(state.mObjects, mAlienBBox);
 
         bool hitLeft =  mAlienBBox.mLeft <= 0;
-        bool hitRight = mAlienBBox.mRight >= (state.mScreenWidth);
+        bool hitRight = mAlienBBox.mRight >= (state.mWindowWidth);
         if(hitLeft || hitRight)
-            AliensChangeDirection(state.mObjects, mAlienBBox, 0, state.mScreenWidth-F_SPRITE_SIZE-1.0f, deltaTimeInSecs);
+            AliensChangeDirection(state.mObjects, mAlienBBox, 0, state.mWindowWidth-F_SPRITE_SIZE-1.0f, deltaTimeInSecs);
     }
 
     MoveObjects(state.mObjects, deltaTimeInSecs);
@@ -158,11 +179,11 @@ void GameScreen(IDiceInvaders* system,
     {
         cullCounts[i] = 0;
     }
-    CullObjects(state.mObjects, state.mScreenWidth, state.mScreenHeight-state.HudWidth, cullCounts);
+    CullObjects(state.mObjects, state.mWindowWidth, state.mWindowHeight-state.HudWidth, cullCounts);
 
     if(cullCounts[ENEMY1] || cullCounts[ENEMY2])
     {
-        //Alien reached the bottom of the screen
+        //Alien reached the bottom of the window
         state.mPlayerLives = 0;
     }
 
@@ -179,6 +200,8 @@ void GameScreen(IDiceInvaders* system,
     state.mPlayerScore += hitCounts[ENEMY2];
     state.mPlayerLives -= hitCounts[PLAYER];
 
+    state.mPlayerScore = std::min(state.mPlayerScore, MAX_SCORE);
+
     AliensRandomFire(state.mObjects, state.mFloorLastTime, iFloorNewTime);
 
     ProcessKeyboardInput(system,
@@ -190,7 +213,7 @@ void GameScreen(IDiceInvaders* system,
     if(!alienCount)
     {
         //No more aliens
-        SpawnAliens(state.mObjects, state.mScreenWidth);
+        SpawnAliens(state.mObjects, state.mWindowWidth);
     }
 
     state.mFloorLastTime = iFloorNewTime;
@@ -206,13 +229,13 @@ void GameScreen(IDiceInvaders* system,
 void InitLevel(IDiceInvaders* system, GameState& gameState)
 {
     gameState.mObjects.reserve(512);
-    const float fScreenWidth = static_cast<float>(gameState.mScreenWidth);
-    const float fScreenHeight = static_cast<float>(gameState.mScreenHeight);
+    const float fWindowWidth = static_cast<float>(gameState.mWindowWidth);
+    const float fWindowHeight = static_cast<float>(gameState.mWindowHeight);
     const float fHudWidth = static_cast<float>(gameState.HudWidth);
 
     //Create the player first. Guaranteed to be at the first
     //index so no need to search for it.
-    CreateObjects(PLAYER, 1, Vec2(fScreenWidth/2.0f, fScreenHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), gameState.mObjects);
+    CreateObjects(PLAYER, 1, Vec2(fWindowWidth/2.0f, fWindowHeight-fHudWidth), Vec2(0, 0), Vec2(0, 0), gameState.mObjects);
 
     gameState.mSprites[ROCKET] = system->createSprite("data/rocket.bmp");
     gameState.mSprites[BOMB] = system->createSprite("data/bomb.bmp");
@@ -221,7 +244,7 @@ void InitLevel(IDiceInvaders* system, GameState& gameState)
     gameState.mSprites[ENEMY2] = system->createSprite("data/enemy2.bmp");
     gameState.mSprites[NULL_OBJECT] = system->createSprite("data/null.bmp");
 
-    SpawnAliens(gameState.mObjects, gameState.mScreenWidth);
+    SpawnAliens(gameState.mObjects, gameState.mWindowWidth);
 
     gameState.mLastTime = system->getElapsedTime();
     gameState.mTimeOfLastFire = gameState.mLastTime;
@@ -238,15 +261,15 @@ int APIENTRY WinMain(
 	DiceInvadersLib lib("DiceInvaders.dll");
 	IDiceInvaders * const system = lib.get();
 
-    const int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN)/3*2;
-    const int screenHeight = GetSystemMetrics(SM_CYFULLSCREEN)/3*2;
+    const int windowWidth = GetSystemMetrics(SM_CXFULLSCREEN)/3*2;
+    const int windowHeight = GetSystemMetrics(SM_CYFULLSCREEN)/3*2;
 
-    if(system->init(screenWidth, screenHeight) == false)
+    if(system->init(windowWidth, windowHeight) == false)
     {
         return 0;
     }
 
-    GameState gameState(screenWidth, screenHeight);
+    GameState gameState(windowWidth, windowHeight);
 
     InitLevel(system, gameState);
 
